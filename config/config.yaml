@@ -1,0 +1,9 @@
+storage:
+  user: "postgres"
+  password: "123"
+  dbname: "practice"
+  sslmode: "disable"
+
+rest:
+  host: "localhost"
+  port: "8080"
