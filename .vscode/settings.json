@@ -1,0 +1,8 @@
+{
+    "go.useCodeSnippetsOnFunctionSuggest": true,
+    "debug.allowImplicitModules": true,
+    "go.toolsManagement.autoUpdate": true,
+    "[go]": {
+      "editor.defaultFormatter": "golang.go"
+    }
+  }

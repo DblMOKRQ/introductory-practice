@@ -22,8 +22,6 @@ func NewVehicle(vin string, brand string, model string, year int, status string)
 		available (доступен) — готов к назначению на рейс.
 		on_route (в рейсе) — находится в пути /зарезервирован.
 		under_maintenance (на ремонте) — проходит ТО или ремонт.
-		reserved (в резерве) — зарезервирован для спецзадач.
-		decommissioned (списан) — выведен из эксплуатации.
 	*/
 	return &Vehicle{
 		VIN:    vin,

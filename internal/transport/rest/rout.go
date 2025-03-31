@@ -25,6 +25,9 @@ type Rout struct {
 
 func NewRout(hand handlers) *Rout {
 	r := gin.Default()
+
+	r.Static("/static", "../front")
+
 	// CORS middleware
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
@@ -44,6 +47,10 @@ func NewRout(hand handlers) *Rout {
 }
 
 func (r *Rout) Run(host string, port string) error {
+
+	r.router.GET("/", func(c *gin.Context) {
+		c.File("../front/index.html")
+	})
 
 	r.router.POST("/add", r.h.AddVehicle)
 
@@ -76,5 +83,5 @@ func (r *Rout) Run(host string, port string) error {
 
 	r.router.GET("/admin/check", r.h.AdminAuthMiddleware(), r.h.CheckAdmin)
 
-	return r.router.Run(":8080")
+	return r.router.Run(host + ":" + port)
 }

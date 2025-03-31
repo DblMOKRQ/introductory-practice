@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+
 	"github.com/DblMOKRQ/introductory-practice/internal/entity"
 	"github.com/DblMOKRQ/introductory-practice/internal/service"
 	"github.com/DblMOKRQ/introductory-practice/pkg/logger"
@@ -17,23 +19,32 @@ func NewHandlers(logger *logger.Logger, server *service.Service) *Handlers {
 	return &Handlers{logger: logger, server: server}
 }
 
+func (h *Handlers) Home(c *gin.Context) {
+
+}
+
 func (h *Handlers) AddVehicle(c *gin.Context) {
+
 	var v entity.Vehicle
 
 	if err := c.ShouldBindJSON(&v); err != nil {
+		h.logger.Error("Error binding JSON", zap.Error(err))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 	h.logger.Info("Adding vehicle", zap.Any("vehicle", v))
+	if err := validateDataVehicle(&v); err != nil {
+		h.logger.Error("Error validating data", zap.Error(err))
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 	if err := h.server.AddVehicle(&v); err != nil {
 		h.logger.Error("Error adding vehicle", zap.Error(err))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-
 	h.logger.Info("Vehicle added")
 	c.JSON(200, v)
-
 }
 
 func (h *Handlers) GetVehicle(c *gin.Context) {
@@ -134,13 +145,50 @@ func (h *Handlers) AdminAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		const adminUser = "admin"
 		const adminPass = "1"
-
+		h.logger.Info("Checking admin auth", zap.String("IP", c.ClientIP()))
 		user, pass, ok := c.Request.BasicAuth()
 		if !ok || user != adminUser || pass != adminPass {
 			c.Header("WWW-Authenticate", `Basic realm="Restricted"`)
 			c.AbortWithStatusJSON(401, gin.H{"error": "Требуется аутентификация"})
 			return
 		}
+		h.logger.Info("Admin auth ok", zap.String("IP", c.ClientIP()))
 		c.Next()
 	}
+}
+
+func containsStatus(status string) bool {
+	validStatuses := map[string]bool{
+		"available":         true,
+		"on_route":          true,
+		"under_maintenance": true,
+	}
+
+	if !validStatuses[status] {
+		return false
+	}
+	return true
+
+}
+
+func validateDataVehicle(v *entity.Vehicle) error {
+	if v.VIN == "" {
+		return errors.New("VIN is required")
+	}
+	if len(v.VIN) != 17 {
+		return errors.New("VIN must be 17 characters long")
+	}
+	if v.Model == "" {
+		return errors.New("Model is required")
+	}
+	if v.Brand == "" {
+		return errors.New("Brand is required")
+	}
+	if v.Year < 1886 || v.Year > 2025 {
+		return errors.New("Year is invalid")
+	}
+	if !containsStatus(v.Status) {
+		return errors.New("Status is invalid")
+	}
+	return nil
 }

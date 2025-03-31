@@ -25,11 +25,10 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to connect to database", zap.Error(err))
 	}
-	_ = storageUsers
 	if err != nil {
 		log.Fatal("failed to connect to database", zap.Error(err))
 	}
-	repo := repository.NewRepository(storageVehicles)
+	repo := repository.NewRepository(storageVehicles, storageUsers)
 
 	srv := service.NewService(repo, log)
 
@@ -39,6 +38,7 @@ func main() {
 
 	log.Info("Server started", zap.String("addres", fmt.Sprint(cfg.Host, ":", cfg.Port)))
 	if err := router.Run(cfg.Host, cfg.Port); err != nil {
+		fmt.Println(err)
 		log.Fatal("failed to start server", zap.Error(err))
 	}
 
